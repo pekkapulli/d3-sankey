@@ -4,15 +4,15 @@ import { justify } from './align';
 import constant from './constant';
 
 function ascendingSourceBreadth(a, b) {
-  return a.index - b.index;
+  return b.index - a.index;
 }
 
 function ascendingTargetBreadth(a, b) {
-  return a.index - b.index;
+  return b.index - a.index;
 }
 
 function ascendingBreadth(a, b) {
-  return a.index - b.index;
+  return b.index - a.index;
 }
 
 function value(d) {
