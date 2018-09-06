@@ -1,18 +1,18 @@
-import {ascending, min, sum} from "d3-array";
-import {map, nest} from "d3-collection";
-import {justify} from "./align";
-import constant from "./constant";
+import { ascending, min, sum } from 'd3-array';
+import { map, nest } from 'd3-collection';
+import { justify } from './align';
+import constant from './constant';
 
 function ascendingSourceBreadth(a, b) {
-  return ascendingBreadth(a.source, b.source) || a.index - b.index;
+  return a.index - b.index;
 }
 
 function ascendingTargetBreadth(a, b) {
-  return ascendingBreadth(a.target, b.target) || a.index - b.index;
+  return a.index - b.index;
 }
 
 function ascendingBreadth(a, b) {
-  return a.y0 - b.y0;
+  return a.index - b.index;
 }
 
 function value(d) {
@@ -45,22 +45,28 @@ function defaultLinks(graph) {
 
 function find(nodeById, id) {
   var node = nodeById.get(id);
-  if (!node) throw new Error("missing: " + id);
+  if (!node) throw new Error('missing: ' + id);
   return node;
 }
 
 export default function() {
-  var x0 = 0, y0 = 0, x1 = 1, y1 = 1, // extent
-      dx = 24, // nodeWidth
-      py = 8, // nodePadding
-      id = defaultId,
-      align = justify,
-      nodes = defaultNodes,
-      links = defaultLinks,
-      iterations = 32;
+  var x0 = 0,
+    y0 = 0,
+    x1 = 1,
+    y1 = 1, // extent
+    dx = 24, // nodeWidth
+    py = 8, // nodePadding
+    id = defaultId,
+    align = justify,
+    nodes = defaultNodes,
+    links = defaultLinks,
+    iterations = 32;
 
   function sankey() {
-    var graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
+    var graph = {
+      nodes: nodes.apply(null, arguments),
+      links: links.apply(null, arguments)
+    };
     computeNodeLinks(graph);
     computeNodeValues(graph);
     computeNodeDepths(graph);
@@ -75,39 +81,55 @@ export default function() {
   };
 
   sankey.nodeId = function(_) {
-    return arguments.length ? (id = typeof _ === "function" ? _ : constant(_), sankey) : id;
+    return arguments.length
+      ? ((id = typeof _ === 'function' ? _ : constant(_)), sankey)
+      : id;
   };
 
   sankey.nodeAlign = function(_) {
-    return arguments.length ? (align = typeof _ === "function" ? _ : constant(_), sankey) : align;
+    return arguments.length
+      ? ((align = typeof _ === 'function' ? _ : constant(_)), sankey)
+      : align;
   };
 
   sankey.nodeWidth = function(_) {
-    return arguments.length ? (dx = +_, sankey) : dx;
+    return arguments.length ? ((dx = +_), sankey) : dx;
   };
 
   sankey.nodePadding = function(_) {
-    return arguments.length ? (py = +_, sankey) : py;
+    return arguments.length ? ((py = +_), sankey) : py;
   };
 
   sankey.nodes = function(_) {
-    return arguments.length ? (nodes = typeof _ === "function" ? _ : constant(_), sankey) : nodes;
+    return arguments.length
+      ? ((nodes = typeof _ === 'function' ? _ : constant(_)), sankey)
+      : nodes;
   };
 
   sankey.links = function(_) {
-    return arguments.length ? (links = typeof _ === "function" ? _ : constant(_), sankey) : links;
+    return arguments.length
+      ? ((links = typeof _ === 'function' ? _ : constant(_)), sankey)
+      : links;
   };
 
   sankey.size = function(_) {
-    return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], sankey) : [x1 - x0, y1 - y0];
+    return arguments.length
+      ? ((x0 = y0 = 0), (x1 = +_[0]), (y1 = +_[1]), sankey)
+      : [x1 - x0, y1 - y0];
   };
 
   sankey.extent = function(_) {
-    return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], sankey) : [[x0, y0], [x1, y1]];
+    return arguments.length
+      ? ((x0 = +_[0][0]),
+        (x1 = +_[1][0]),
+        (y0 = +_[0][1]),
+        (y1 = +_[1][1]),
+        sankey)
+      : [[x0, y0], [x1, y1]];
   };
 
   sankey.iterations = function(_) {
-    return arguments.length ? (iterations = +_, sankey) : iterations;
+    return arguments.length ? ((iterations = +_), sankey) : iterations;
   };
 
   // Populate the sourceLinks and targetLinks for each node.
@@ -121,9 +143,12 @@ export default function() {
     var nodeById = map(graph.nodes, id);
     graph.links.forEach(function(link, i) {
       link.index = i;
-      var source = link.source, target = link.target;
-      if (typeof source !== "object") source = link.source = find(nodeById, source);
-      if (typeof target !== "object") target = link.target = find(nodeById, target);
+      var source = link.source,
+        target = link.target;
+      if (typeof source !== 'object')
+        source = link.source = find(nodeById, source);
+      if (typeof target !== 'object')
+        target = link.target = find(nodeById, target);
       source.sourceLinks.push(link);
       target.targetLinks.push(link);
     });
@@ -146,7 +171,11 @@ export default function() {
   function computeNodeDepths(graph) {
     var nodes, next, x;
 
-    for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+    for (
+      nodes = graph.nodes, next = [], x = 0;
+      nodes.length;
+      ++x, nodes = next, next = []
+    ) {
       nodes.forEach(function(node) {
         node.depth = x;
         node.sourceLinks.forEach(function(link) {
@@ -157,7 +186,11 @@ export default function() {
       });
     }
 
-    for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+    for (
+      nodes = graph.nodes, next = [], x = 0;
+      nodes.length;
+      ++x, nodes = next, next = []
+    ) {
       nodes.forEach(function(node) {
         node.height = x;
         node.targetLinks.forEach(function(link) {
@@ -170,22 +203,30 @@ export default function() {
 
     var kx = (x1 - x0 - dx) / (x - 1);
     graph.nodes.forEach(function(node) {
-      node.x1 = (node.x0 = x0 + Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x)))) * kx) + dx;
+      node.x1 =
+        (node.x0 =
+          x0 +
+          Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x)))) *
+            kx) + dx;
     });
   }
 
   function computeNodeBreadths(graph) {
     var columns = nest()
-        .key(function(d) { return d.x0; })
-        .sortKeys(ascending)
-        .entries(graph.nodes)
-        .map(function(d) { return d.values; });
+      .key(function(d) {
+        return d.x0;
+      })
+      .sortKeys(ascending)
+      .entries(graph.nodes)
+      .map(function(d) {
+        return d.values;
+      });
 
     //
     initializeNodeBreadth();
     resolveCollisions();
     for (var alpha = 1, n = iterations; n > 0; --n) {
-      relaxRightToLeft(alpha *= 0.99);
+      relaxRightToLeft((alpha *= 0.99));
       resolveCollisions();
       relaxLeftToRight(alpha);
       resolveCollisions();
@@ -211,51 +252,62 @@ export default function() {
       columns.forEach(function(nodes) {
         nodes.forEach(function(node) {
           if (node.targetLinks.length) {
-            var dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
-            node.y0 += dy, node.y1 += dy;
+            var dy =
+              (sum(node.targetLinks, weightedSource) /
+                sum(node.targetLinks, value) -
+                nodeCenter(node)) *
+              alpha;
+            (node.y0 += dy), (node.y1 += dy);
           }
         });
       });
     }
 
     function relaxRightToLeft(alpha) {
-      columns.slice().reverse().forEach(function(nodes) {
-        nodes.forEach(function(node) {
-          if (node.sourceLinks.length) {
-            var dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
-            node.y0 += dy, node.y1 += dy;
-          }
+      columns
+        .slice()
+        .reverse()
+        .forEach(function(nodes) {
+          nodes.forEach(function(node) {
+            if (node.sourceLinks.length) {
+              var dy =
+                (sum(node.sourceLinks, weightedTarget) /
+                  sum(node.sourceLinks, value) -
+                  nodeCenter(node)) *
+                alpha;
+              (node.y0 += dy), (node.y1 += dy);
+            }
+          });
         });
-      });
     }
 
     function resolveCollisions() {
       columns.forEach(function(nodes) {
         var node,
-            dy,
-            y = y0,
-            n = nodes.length,
-            i;
+          dy,
+          y = y0,
+          n = nodes.length,
+          i;
 
         // Push any overlapping nodes down.
         nodes.sort(ascendingBreadth);
         for (i = 0; i < n; ++i) {
           node = nodes[i];
           dy = y - node.y0;
-          if (dy > 0) node.y0 += dy, node.y1 += dy;
+          if (dy > 0) (node.y0 += dy), (node.y1 += dy);
           y = node.y1 + py;
         }
 
         // If the bottommost node goes outside the bounds, push it back up.
         dy = y - py - y1;
         if (dy > 0) {
-          y = (node.y0 -= dy), node.y1 -= dy;
+          (y = node.y0 -= dy), (node.y1 -= dy);
 
           // Push any overlapping nodes back up.
           for (i = n - 2; i >= 0; --i) {
             node = nodes[i];
             dy = node.y1 + py - y;
-            if (dy > 0) node.y0 -= dy, node.y1 -= dy;
+            if (dy > 0) (node.y0 -= dy), (node.y1 -= dy);
             y = node.y0;
           }
         }
@@ -269,12 +321,13 @@ export default function() {
       node.targetLinks.sort(ascendingSourceBreadth);
     });
     graph.nodes.forEach(function(node) {
-      var y0 = node.y0, y1 = y0;
+      var y0 = node.y0,
+        y1 = y0;
       node.sourceLinks.forEach(function(link) {
-        link.y0 = y0 + link.width / 2, y0 += link.width;
+        (link.y0 = y0 + link.width / 2), (y0 += link.width);
       });
       node.targetLinks.forEach(function(link) {
-        link.y1 = y1 + link.width / 2, y1 += link.width;
+        (link.y1 = y1 + link.width / 2), (y1 += link.width);
       });
     });
   }
